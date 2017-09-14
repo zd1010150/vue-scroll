@@ -191,7 +191,8 @@
                               button cancel
                               button feifei444447777777788888666666666666655555555555555
                               button click2222
-                              button cancel2333
+                              button cancel233345
+                            td test 我是中国字
                         code
                             pre npm i v-bar
                         h4 Using yarn
@@ -328,7 +329,5 @@ export default {
 }
 </script>
 <style>
-    table td{
-            white-space: nowrap;
-    }
+    
 </style>

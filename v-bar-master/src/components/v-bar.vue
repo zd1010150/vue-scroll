@@ -7,6 +7,7 @@
             height: 100%
             width: 100%
             overflow: hidden
+            box-sizing: border-box
 
         &--wrapper
             position: absolute
@@ -15,11 +16,13 @@
             top: 0
             overflow-y: scroll
             overflow-x: scroll
+            box-sizing: border-box
 
             > *
                 position: relative
                 padding-right: $pixel-proportion * 3 !important
                 padding-bottom: $pixel-proportion * 3 !important
+
 
         &--vertical,
         &--horizontal
