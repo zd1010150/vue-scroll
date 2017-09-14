@@ -159,7 +159,8 @@ export default {
         },
         barInternalHorizontal: {
             left: 0
-        }
+        },
+        hiddenMaxStyle: {}
     }),
     mounted () {
         addResizeListener(this.$refs.container, this.resize)
@@ -171,7 +172,8 @@ export default {
         document.addEventListener('touchend', this.stopDrag)
 
         this.getEles()
-        this.getSizes()
+        this.resize()
+        // this.calculateHiddenMax()
     },
     beforeDestroy () {
         removeResizeListener(this.$refs.container, this.resize)
@@ -233,44 +235,69 @@ export default {
         getSizes () {
             let wrapperObj = this.wrapperObj.elm,
                 container = this.container.elm
-            this.bars.horizontal.size = wrapperObj.scrollWidth - container.scrollWidth > 24 &&
-                wrapperObj.scrollWidth - container.scrollWidth !== 0
+            // this.bars.horizontal.size = wrapperObj.scrollWidth - container.scrollWidth > 24 &&
+            //     wrapperObj.scrollWidth - container.scrollWidth !== 0
+            //     ? (container.scrollWidth / wrapperObj.scrollWidth) * container.scrollWidth
+            //     : 0
+            // this.bars.vertical.size = wrapperObj.scrollHeight - container.scrollHeight > 24 &&
+            //     wrapperObj.scrollHeight - container.scrollHeight !== 0
+            //     ? (container.scrollHeight / wrapperObj.scrollHeight) * container.scrollHeight
+            //     : 0
+            this.bars.horizontal.size = wrapperObj.scrollWidth - container.scrollWidth !== 0
                 ? (container.scrollWidth / wrapperObj.scrollWidth) * container.scrollWidth
                 : 0
-            this.bars.vertical.size = wrapperObj.scrollHeight - container.scrollHeight > 24 &&
-                wrapperObj.scrollHeight - container.scrollHeight !== 0
+            this.bars.vertical.size = wrapperObj.scrollHeight - container.scrollHeight !== 0
                 ? (container.scrollHeight / wrapperObj.scrollHeight) * container.scrollHeight
                 : 0
-            this.calculateInternalBar()
         },
         scroll (e) {
-            console.log('scroll,', this.wrapperObj.elm.scrollTop)
-            this.getSizes()
+            this.calculateInternalBar()
         },
-        resize () {
+        resize (e) {
+            console.log('resize', e)
             this.getSizes()
+            this.calculateInternalBar()
+            // this.calculateHiddenMax()
+        },
+        calculateHiddenMax () {
+            console.log('hiddenmax resize', this.wrapperObj.elm.scrollWidth)
+            if (this.bars.horizontal.size > 0) {
+                this.hiddenMaxStyle = {
+                    width: (this.wrapperObj.elm.scrollWidth + 20) + 'px',
+                    visibility: 'hidden',
+                    height: '1px',
+                    boxSizing: 'border-box'
+                }
+            }
         },
         getBarInternal (axis) {
             let internalSize,
                 positionWrapper,
                 sizeWrapper,
                 sizeBar,
-                sizeContainer
+                sizeContainer,
+                regulatorSize
+            if (this.bars.horizontal.size && this.bars.vertical.size) {
+                regulatorSize = 40
+            } else {
+                regulatorSize = 32
+            }
             if (axis === 'X') {
                 positionWrapper = this.wrapperObj.elm.scrollLeft
                 sizeWrapper = this.wrapperObj.elm.scrollWidth
-                sizeBar = this.bars.horizontal.size
+                sizeBar = this.bars.horizontal.size + regulatorSize
                 sizeContainer = this.container.elm.scrollWidth
             } else if (axis === 'Y') {
                 positionWrapper = this.wrapperObj.elm.scrollTop
                 sizeWrapper = this.wrapperObj.elm.scrollHeight
-                sizeBar = this.bars.vertical.size
+                sizeBar = this.bars.vertical.size + regulatorSize
                 sizeContainer = this.container.elm.scrollHeight
             }
             internalSize = (positionWrapper / (sizeWrapper - (sizeContainer))) * (sizeContainer - sizeBar)
             return internalSize
         },
         getCoordinates (e, axis) {
+            console.log('getCoordinates trigger', new Date())
             let coordinate,
                 sizeWrapper,
                 sizeBar,
@@ -280,15 +307,16 @@ export default {
                 sizeWrapper = this.wrapperObj.elm.scrollWidth
                 sizeBar = this.bars.horizontal.size
                 sizeContainer = this.container.elm.scrollWidth
-                let percentage = (e.clientX - this.dragging.offset + this.bars.horizontal.elm.style.left) / (this.bars.horizontal.parent.offsetWidth - sizeBar)
-                coordinate = percentage * (sizeWrapper - sizeContainer)
+                let percentage = (e.clientX - this.dragging.offset) / (this.bars.horizontal.parent.offsetWidth - sizeBar)
+                coordinate = (percentage > 1 ? 1 : percentage) * (sizeWrapper - sizeContainer)
+                console.log(sizeWrapper, sizeContainer, e.clientX, this.dragging.offset, percentage, 'x-dragging')
             } else if (axis === 'Y') {
                 sizeWrapper = this.wrapperObj.elm.scrollHeight
                 sizeBar = this.bars.vertical.size
                 sizeContainer = this.container.elm.scrollHeight
-                let percentage = (e.clientY - this.dragging.offset + this.bars.vertical.elm.style.top) / (this.bars.vertical.parent.offsetHeight - sizeBar)
-                coordinate = percentage * (sizeWrapper - sizeContainer)
-                console.log(this.bars.vertical.elm.style, 'dragging')
+                let percentage = (e.clientY - this.dragging.offset) / (this.bars.vertical.parent.offsetHeight - sizeBar)
+                coordinate = (percentage > 1 ? 1 : percentage) * (sizeWrapper - sizeContainer)
+                console.log(e.clientY, this.dragging.offset, this.bars.vertical.elm.offsetTop, percentage, this.bars.vertical.parent.offsetHeight, sizeBar, 'y-dragging')
             }
             return coordinate
         },
@@ -297,31 +325,16 @@ export default {
             e.stopPropagation()
 
             e = e.changedTouches ? e.changedTouches[0] : e
-
-            const axis = e.target.getAttribute('data-axis'),
-                dataDrag = e.target.getAttribute('data-drag-source')
-            let offset,
-                elementOffset
-            e.explicitOriginalTarget = e.explicitOriginalTarget ? e.explicitOriginalTarget : e.currentTarget
+            let axis = e.target.getAttribute('data-axis'), offset
             if (axis === 'Y') {
-                if (dataDrag === 'bar') {
-                    elementOffset = e.explicitOriginalTarget.offsetTop + (this.bars.vertical.size * 1.4)
-                } else if (dataDrag === 'internal') {
-                    elementOffset = e.clientY
-                }
+                offset = e.clientY - this.bars.vertical.elm.offsetTop
             } else if (axis === 'X') {
-                if (dataDrag === 'bar') {
-                    elementOffset = e.explicitOriginalTarget.offsetLeft + (this.bars.horizontal.size * 1.4)
-                } else if (dataDrag === 'internal') {
-                    elementOffset = e.clientX
-                }
+                offset = e.clientX - this.bars.horizontal.elm.offsetLeft
             }
-            offset = elementOffset
-
             this.dragging = {
                 enable: true,
                 axis: axis,
-                offset: offset
+                offset
             }
         },
         onDrag (e) {
@@ -338,7 +351,7 @@ export default {
                     wrapper.scrollTop = this.getCoordinates(e, 'Y')
                 }
 
-                this.getSizes()
+                this.calculateInternalBar()
             }
         },
         calculateInternalBar () {
@@ -350,6 +363,7 @@ export default {
                 width: this.bars.horizontal.size + 'px',
                 left: this.getBarInternal('X') + 'px'
             }
+            console.log('calculateInternalBar')
         },
         stopDrag (e) {
             if (this.dragging.enable) {

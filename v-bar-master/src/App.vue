@@ -37,6 +37,7 @@
 
     .is-marginless
         margin: 0
+        white-space: nowrap
 
     .component
         height: 100%
@@ -93,20 +94,19 @@
             box-shadow: 0 0 $pixel-proportion $color1
 
             .verticalBarClass
-                background-color: $color4
+                background-color: transparent
 
             .verticalBarInternalClass
                 background-color: $color2
 
             .horizontalBarClass
-                background-color: $color4
+                background-color: transparent
 
             .horizontalBarInternalClass
                 background-color: $color2
 
             .container
                 position: relative
-                width: 320px
                 height: 800px
                 text-align: center
 
@@ -165,20 +165,33 @@
         hBarInternal="horizontalBarInternalClass")
             .container
                 .internal
+                    button(@click="changeSIze") changeSIze
                     h3.is-marginless Welcome to
                     h1.title.is-marginless VBar
-                    h4.is-marginless The virtual responsive crossbrowser scrollbar <br> component for VueJS 2x
-                    table
-                        tr
-                            td this is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long long
-                            td this is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long long
-                            td this is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long long
-                            td this is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long long
-                            td this is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long longthis is test verwy long long
                     .steps
                         h2 Usage
                         h3 Install
                         h4 Using NPM
+                        table
+                          tr
+                            td this is timeTransition
+                            td
+                              button danan
+                              button feifei
+                              button cancel
+                              button danan
+                              button feifei
+                              button click
+                              button cancel
+                              button click
+                              button cancel
+                              button danan
+                              button feifei
+                              button click
+                              button cancel
+                              button feifei444447777777788888666666666666655555555555555
+                              button click2222
+                              button cancel2333
                         code
                             pre npm i v-bar
                         h4 Using yarn
@@ -305,7 +318,13 @@
 import VBar from './components/v-bar.vue'
 export default {
     data: () => ({}),
-    components: { VBar }
+    components: { VBar },
+    methods: {
+        changeSIze () {
+            document.getElementById('vbar').style.width = '250px'
+            console.log(document.getElementById('vbar').style.width, 'change size')
+        }
+    }
 }
 </script>
 <style>
